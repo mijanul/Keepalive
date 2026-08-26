@@ -8,11 +8,7 @@ Public helper for the Doctor Strange API on Render.
 
 ## Git hooks
 
-Install once after clone:
-
-```bash
-bash scripts/setup-git-hooks.sh
-```
+Husky installs on `npm install` (same pattern as KamarTaj).
 
 | Hook | What it does |
 | ---- | ------------ |
