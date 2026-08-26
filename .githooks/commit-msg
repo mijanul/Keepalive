@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Reject commits whose message contains "co-authored by" (any casing).
+set -euo pipefail
+
+msg_file="${1:-}"
+if [[ -z "$msg_file" || ! -f "$msg_file" ]]; then
+  echo "commit-msg: missing commit message file" >&2
+  exit 1
+fi
+
+# Match Co-authored-by trailers and spaced/cased variants (e.g. "co-authored by").
+if grep -qiE 'co[-[:space:]]*authored[-[:space:]]*by' "$msg_file"; then
+  echo "commit-msg: rejected — commit message must not contain \"co-authored by\"." >&2
+  echo "Remove any Co-authored-by trailer (or similar wording) and try again." >&2
+  exit 1
+fi
+
+exit 0

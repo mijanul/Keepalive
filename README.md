@@ -6,6 +6,18 @@ Public helper for the Doctor Strange API on Render.
 - GitHub Actions writes today's UTC date to `heartbeat/daily.txt` once per day
 - A Vercel UI can ping `/health`, `/health/db`, or push a random note into `notes/`
 
+## Git hooks
+
+Install once after clone:
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+| Hook | What it does |
+| ---- | ------------ |
+| commit-msg | Reject commit messages that contain `co-authored by` (any casing) |
+
 ## Secrets
 
 ### GitHub Actions (this repo)
