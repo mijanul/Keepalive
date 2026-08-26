@@ -4,14 +4,12 @@
 # 1. Repo → Settings → Secrets and variables → Actions
 # 2. Add secret HEALTH_URL = https://<your-app>.onrender.com/health
 # 3. Keep this file on the default branch (scheduled jobs only run there)
-#
-# Schedule averages ~7.5 minutes (cron has 1-minute resolution only).
 
 name: Ping health
 
 on:
   schedule:
-    - cron: "0,8,15,23,30,38,45,53 * * * *"
+    - cron: "*/8 * * * *"
   workflow_dispatch:
 
 permissions:

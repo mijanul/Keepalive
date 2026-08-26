@@ -2,7 +2,7 @@
 
 Public helper for the Doctor Strange API on Render.
 
-- GitHub Actions pings `/health` and `/health/db` about every 7.5 minutes
+- GitHub Actions pings `/health` and `/health/db` every 8 minutes
 - GitHub Actions writes today's UTC date to `heartbeat/daily.txt` once per day
 - A Vercel UI can ping `/health`, `/health/db`, or push a random note into `notes/`
 
@@ -75,7 +75,7 @@ Do **not** put this PAT in:
 3. Create a fine-grained PAT (section above) and copy it once.
 4. Import this repo in Vercel. Add env vars: `HEALTH_URL`, `GITHUB_REPO`, `GH_PAT`, and `COMMIT_SECRET`.
 5. Deploy the Vercel project.
-6. GitHub → **Actions → Ping health → Run workflow** once to confirm the ~7.5-minute job.
+6. GitHub → **Actions → Ping health → Run workflow** once to confirm the 8-minute job.
 7. Open the Vercel URL and click **Check health** and **Check database health**.
 
 Local UI:
