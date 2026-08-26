@@ -1,0 +1,49 @@
+# Pings the deployed API so Render free-tier does not spin down.
+#
+# Setup (once):
+# 1. Repo → Settings → Secrets and variables → Actions
+# 2. Add secret HEALTH_URL = https://<your-app>.onrender.com/health
+# 3. Keep this file on the default branch (scheduled jobs only run there)
+
+name: Ping health
+
+on:
+  schedule:
+    - cron: "*/8 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping health endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require HEALTH_URL secret
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "::error::Set repository secret HEALTH_URL to your public /health URL"
+            exit 1
+          fi
+
+      - name: Ping /health
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+        run: |
+          set -euo pipefail
+          http_code="$(curl -sS -o /tmp/keepalive-body -w "%{http_code}" \
+            --connect-timeout 30 \
+            --max-time 120 \
+            --retry 2 \
+            --retry-delay 5 \
+            "$HEALTH_URL")"
+          echo "HTTP $http_code"
+          cat /tmp/keepalive-body || true
+          echo
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Keepalive ping failed with HTTP $http_code"
+            exit 1
+          fi
