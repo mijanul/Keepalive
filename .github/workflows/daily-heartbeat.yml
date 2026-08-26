@@ -1,7 +1,7 @@
-# Writes today's UTC date to heartbeat/monthly.txt at most once every 30 days.
+# Writes today's UTC date to heartbeat/daily.txt once per day.
 # Uses GITHUB_TOKEN — no PAT required for this workflow.
 
-name: Monthly heartbeat
+name: Daily heartbeat
 
 on:
   schedule:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   commit:
-    name: Commit date if 30 days passed
+    name: Commit today's date
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,7 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Write heartbeat if due
+      - name: Write daily heartbeat
         env:
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
@@ -30,21 +30,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p heartbeat
-          file="heartbeat/monthly.txt"
+          file="heartbeat/daily.txt"
           today="$(date -u +%F)"
 
           if [ -f "$file" ]; then
             last="$(tr -d '[:space:]' < "$file")"
-            if [ -n "$last" ]; then
-              last_epoch="$(date -u -d "$last" +%s)"
-              today_epoch="$(date -u -d "$today" +%s)"
-              days="$(( (today_epoch - last_epoch) / 86400 ))"
-              echo "Last heartbeat: $last ($days day(s) ago)"
-              if [ "$days" -lt 30 ]; then
-                echo "Skip commit; waiting until 30 days have passed."
-                exit 0
-              fi
+            if [ "$last" = "$today" ]; then
+              echo "Already wrote heartbeat for $today; skip."
+              exit 0
             fi
+            echo "Last heartbeat: $last"
           fi
 
           printf '%s\n' "$today" > "$file"
@@ -53,5 +48,5 @@ jobs:
             echo "No file change to commit."
             exit 0
           fi
-          git commit -m "chore: monthly heartbeat $today"
+          git commit -m "chore: daily heartbeat $today"
           git push

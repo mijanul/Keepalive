@@ -42,8 +42,8 @@ export default function HomePage() {
     <main>
       <h1>Keepalive</h1>
       <p>
-        GitHub Actions ping <code>/health</code> every 8 minutes (app only). Use the buttons to
-        check app health or database health, or to push a random note.
+        GitHub Actions ping <code>/health</code> and <code>/health/db</code> about every 7.5
+        minutes. Use the buttons to check app health or database health, or to push a random note.
       </p>
 
       <section className="panel">

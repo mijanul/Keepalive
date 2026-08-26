@@ -4,12 +4,14 @@
 # 1. Repo → Settings → Secrets and variables → Actions
 # 2. Add secret HEALTH_URL = https://<your-app>.onrender.com/health
 # 3. Keep this file on the default branch (scheduled jobs only run there)
+#
+# Schedule averages ~7.5 minutes (cron has 1-minute resolution only).
 
 name: Ping health
 
 on:
   schedule:
-    - cron: "*/8 * * * *"
+    - cron: "0,8,15,23,30,38,45,53 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -17,7 +19,7 @@ permissions:
 
 jobs:
   ping:
-    name: Ping health endpoint
+    name: Ping health endpoints
     runs-on: ubuntu-latest
     steps:
       - name: Require HEALTH_URL secret
@@ -29,21 +31,39 @@ jobs:
             exit 1
           fi
 
-      - name: Ping /health
+      - name: Ping /health and /health/db
         env:
           HEALTH_URL: ${{ secrets.HEALTH_URL }}
         run: |
           set -euo pipefail
-          http_code="$(curl -sS -o /tmp/keepalive-body -w "%{http_code}" \
-            --connect-timeout 30 \
-            --max-time 120 \
-            --retry 2 \
-            --retry-delay 5 \
-            "$HEALTH_URL")"
-          echo "HTTP $http_code"
-          cat /tmp/keepalive-body || true
-          echo
-          if [ "$http_code" != "200" ]; then
-            echo "::error::Keepalive ping failed with HTTP $http_code"
-            exit 1
-          fi
+
+          case "$HEALTH_URL" in
+            */health) HEALTH_DB_URL="${HEALTH_URL}/db" ;;
+            *) HEALTH_DB_URL="${HEALTH_URL%/}/health/db" ;;
+          esac
+
+          ping_one() {
+            local label="$1"
+            local url="$2"
+            local body_file
+            body_file="$(mktemp)"
+            local http_code
+            http_code="$(curl -sS -o "$body_file" -w "%{http_code}" \
+              --connect-timeout 30 \
+              --max-time 120 \
+              --retry 2 \
+              --retry-delay 5 \
+              "$url")"
+            echo "==> $label"
+            echo "URL: $url"
+            echo "HTTP $http_code"
+            cat "$body_file" || true
+            echo
+            if [ "$http_code" != "200" ]; then
+              echo "::error::$label failed with HTTP $http_code"
+              exit 1
+            fi
+          }
+
+          ping_one "/health" "$HEALTH_URL"
+          ping_one "/health/db" "$HEALTH_DB_URL"
