@@ -7,10 +7,7 @@
 
 name: Ping health
 
-on:
-  schedule:
-    - cron: "*/8 * * * *"
-  workflow_dispatch:
+on: []  # disabled
 
 permissions:
   contents: read
